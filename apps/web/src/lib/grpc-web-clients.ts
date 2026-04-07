@@ -2,18 +2,23 @@
 
 import { MessageServiceClient, UserServiceClient } from '@/gen/server_grpc_web_pb';
 
+/** 루프백 Envoy 직접 URL — 브라우저에서 쓰면 CORS 나므로 같은 출처 /grpc-web 으로 돌림 */
+const LOOPBACK_ENVOY = /^https?:\/\/(localhost|127\.0\.0\.1):8080\/?$/i;
+
 /**
- * `NEXT_PUBLIC_GRPC_WEB_URL` 이 있으면 직접 Envoy 등으로 요청(교차 출처·CORS 필요).
- * 없으면 같은 출처 `/grpc-web` → Next rewrites 가 Envoy 로 넘김(로컬 개발 시 CORS 없음).
+ * 브라우저: 기본은 `/grpc-web`(Next → Envoy 프록시, CORS 없음).
+ * `NEXT_PUBLIC_GRPC_WEB_URL` 이 루프백 8080 이거나 비어 있으면 위와 동일.
+ * 그 외(다른 호스트/도메인 Envoy)만 직접 URL 사용.
  */
 export function getGrpcWebBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_GRPC_WEB_URL;
-  if (fromEnv?.length) {
+  const fromEnv = process.env.NEXT_PUBLIC_GRPC_WEB_URL?.trim();
+  if (typeof window !== 'undefined') {
+    if (!fromEnv || LOOPBACK_ENVOY.test(fromEnv)) {
+      return `${window.location.origin}/grpc-web`;
+    }
     return fromEnv;
   }
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/grpc-web`;
-  }
+  if (fromEnv?.length) return fromEnv;
   return 'http://127.0.0.1:8080';
 }
 
