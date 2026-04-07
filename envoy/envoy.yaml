@@ -1,8 +1,7 @@
-# gRPC-Web → gRPC (grpc/grpc-web echo 예제와 동일 패턴)
-# ENVOY_CONFIG_VERIFY: grpc_web_typed_v3_20260407 (git pull 후 이 줄이 있어야 함)
+# gRPC-Web → gRPC
+# ENVOY_CONFIG_VERIFY: cors_route_policy_20260407
 #
-# "type URL: ''" 오류는 보통 (1) 이 파일이 예전 버전 (2) typed_config 들여쓰기 깨짐
-# 확인: sed -n '45,58p' envoy/envoy.yaml | cat -A
+# 브라우저 CORS: v3에서는 Cors 필터 + 라우트 typed_per_filter_config(CorsPolicy) 조합이 필요합니다.
 
 admin:
   access_log_path: /tmp/admin_access.log
@@ -38,20 +37,26 @@ static_resources:
                             timeout: 0s
                             max_stream_duration:
                               grpc_timeout_header_max: 0s
-                      cors:
-                        allow_origin_string_match:
-                          - prefix: "*"
-                        allow_methods: GET, PUT, DELETE, POST, OPTIONS, PATCH
-                        allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization
-                        max_age: "1728000"
-                        expose_headers: custom-header-1,grpc-status,grpc-message
+                          typed_per_filter_config:
+                            envoy.filters.http.cors:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.CorsPolicy
+                              allow_origin_string_match:
+                                - safe_regex:
+                                    google_re2: {}
+                                    regex: "^http://(localhost|127\\.0\\.0\\.1)(:\\d+)?$"
+                              allow_methods: "GET, PUT, DELETE, POST, OPTIONS, PATCH"
+                              allow_headers: "keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization"
+                              expose_headers: "custom-header-1,grpc-status,grpc-message"
+                              max_age: "1728000"
+                              allow_private_network_access: true
                 http_filters:
-                  - name: envoy.filters.http.grpc_web
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
+                  # OPTIONS 프리플라이트는 cors가 먼저 처리하는 편이 안전
                   - name: envoy.filters.http.cors
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
+                  - name: envoy.filters.http.grpc_web
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
                   - name: envoy.filters.http.router
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
