@@ -75,7 +75,7 @@
 |------|-----------|------|
 | 업스트림 포트 | `envoy.yaml`은 `127.0.0.1:9090` | 실제 gRPC 서버 리슨 포트와 **일치**시킨다. |
 | 브라우저 | `ChatRoom.jsx` 등은 `http://localhost:50051` | 브라우저는 **gRPC 직접 포트가 아니라 Envoy(또는 게이트웨이) URL**을 쓰는 것이 일반적이다. |
-| CORS | 이미 `cors` 필터 존재 | Next.js dev origin(`localhost:3000`)이 허용되는지 확인 |
+| CORS | 이미 `cors` 필터 존재 | Next.js dev origin(`localhost:3001` 등)이 허용되는지 확인 (`allow_origin` 이 넓으면 보통 무관) |
 
 ---
 

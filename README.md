@@ -20,12 +20,13 @@ npm install          # 최초 1회
 npm run grpc:dev     # 터미널 1
 # 터미널 2: envoy -c envoy/envoy.yaml
 copy apps\web\.env.local.example apps\web\.env.local   # Next 최초 1회 (Windows)
-npm run web:dev      # 터미널 3 → http://localhost:3000
+npm run web:dev      # 터미널 3 → http://localhost:3001 (3000 점유 시 충돌 방지)
 ```
 
 **상세·Windows 명령·Docker Envoy 주의·포트 충돌(`EADDRINUSE`)·CRA 실행** 은 **[docs/03_LOCAL_RUN.md](./docs/03_LOCAL_RUN.md)** 를 참고하세요.  
 **Envoy 없이 할 수 있는지 / 대안 / Envoy 사용법** 은 **[docs/04_ENVOY_ALTERNATIVES.md](./docs/04_ENVOY_ALTERNATIVES.md)** 를 참고하세요.  
-**Docker Desktop 없이(WSL2 전용·무료 Docker Engine·compose)** 는 **[docs/05_WSL2_DOCKER_FREE.md](./docs/05_WSL2_DOCKER_FREE.md)** 와 루트 **`docker-compose.yml`** 을 참고하세요.
+**Docker Desktop 없이(WSL2 전용·무료 Docker Engine·compose)** 는 **[docs/05_WSL2_DOCKER_FREE.md](./docs/05_WSL2_DOCKER_FREE.md)** 와 루트 **`docker-compose.yml`** 을 참고하세요.  
+WSL에서 `envoy` 가 없으면 저장소 루트에서 **`bash scripts/install-envoy-wsl.sh`** 로 바이너리 설치.
 
 ## npm 스크립트 (루트)
 

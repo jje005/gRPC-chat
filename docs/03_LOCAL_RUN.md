@@ -32,8 +32,8 @@ flowchart LR
 |--------|------|------|
 | gRPC 서버 (Node) | **50051** | `GRPC_PORT` 로 변경 가능 |
 | Envoy (gRPC-Web) | **8080** | `envoy.yaml` 리스너 |
-| Next.js (`apps/web`) | **3000** | `next dev` 기본 |
-| CRA (`client`) | **3000** (기본) | Next와 동시 실행 시 포트 충돌 → 한쪽만 켜거나 포트 변경 |
+| Next.js (`apps/web`) | **3001** | `package.json` 의 `-p 3001` (3000과 겹치지 않게) |
+| CRA (`client`) | **3000** (기본) | Next와 동시에 켜도 포트가 달라 충돌 적음 |
 
 ## 실행 순서 (권장: 터미널 3개)
 
@@ -110,7 +110,7 @@ copy apps\web\.env.local.example apps\web\.env.local
 npm run web:dev
 ```
 
-브라우저: **http://localhost:3000**
+브라우저: **http://localhost:3001**
 
 `.env.local` 의 `NEXT_PUBLIC_GRPC_WEB_URL` 기본값은 **`http://localhost:8080`** (Envoy) 입니다.
 
@@ -181,7 +181,7 @@ taskkill /PID <PID> /F
 
 ### Next와 CRA를 동시에 켜면 포트 충돌
 
-둘 다 기본 **3000** 이면 하나는 `--port` 로 바꾸거나, 한쪽만 실행합니다.
+Next(3001)와 CRA(3000)를 동시에 켜도 보통은 괜찮습니다. 같은 포트를 쓰게 바꿨다면 한쪽만 실행하거나 `--port` 로 나눕니다.
 
 ---
 
