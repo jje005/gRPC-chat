@@ -129,6 +129,14 @@ netstat -ano | findstr :9901
 
   또는 `debug` 까지 올리면 더 자세합니다.
 
+### 3.4.1 로그가 어려울 때 — 한 줄만 보면 되는 것
+
+- **`yaml-cpp: error at line X ... end of sequence not found`**  
+  → 설정 파일 **YAML 문법(들여쓰기)이 깨진 것**입니다. `listeners` / `clusters` 가 `static_resources` **안**에 들어가야 하는데, 예전 예제처럼 맨 앞줄에 나란히 쓰면 파서가 망가집니다. 저장소의 `envoy/envoy.yaml` 최신본을 쓰세요.
+
+- **`At least one of --config-path ... should be non-empty`**  
+  → `-c` 뒤에 경로가 비었거나, `sudo` 등으로 경로가 빠졌을 때입니다. `envoy --config-path "$PWD/envoy/envoy.yaml"` 처럼 **절대 경로**를 권장합니다.
+
 ### 3.5 동작 확인 (간단)
 
 - 브라우저/프론트의 **gRPC-Web base URL** 은 **`http://localhost:8080`** (Envoy) 이어야 합니다.  
