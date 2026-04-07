@@ -2,12 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useRef, type KeyboardEvent } from 'react';
-import { UserServiceClient } from '@/gen/server_grpc_web_pb';
 import { UserInfo } from '@/gen/server_pb';
+import { getGrpcWebBaseUrl, getUserServiceClient } from '@/lib/grpc-web-clients';
 import { useStore } from '@/store/store';
-
-const grpcWebUrl = process.env.NEXT_PUBLIC_GRPC_WEB_URL ?? 'http://localhost:8080';
-const userClient = new UserServiceClient(grpcWebUrl, null, null);
 
 export function JoinPage() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -22,11 +19,16 @@ export function JoinPage() {
     const userInfo = new UserInfo();
     userInfo.setUsername(nickname);
 
-    userClient.login(userInfo, {}, (err, response) => {
+    getUserServiceClient().login(userInfo, {}, (err, response) => {
       if (err) {
         // http status code: 0 = 브라우저가 응답을 못 받음(연결 거절·CORS·Envoy 미기동 등)
         const code = err && typeof err === 'object' && 'code' in err ? (err as { code: unknown }).code : undefined;
-        console.error('[Login gRPC-Web]', { baseUrl: grpcWebUrl, message: err.message, code, err });
+        console.error('[Login gRPC-Web]', {
+          baseUrl: getGrpcWebBaseUrl(),
+          message: err.message,
+          code,
+          err,
+        });
         return;
       }
       if (response?.getStatus() === 'success') {

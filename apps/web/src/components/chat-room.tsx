@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { MessageServiceClient } from '@/gen/server_grpc_web_pb';
 import { Empty, Message } from '@/gen/server_pb';
+import { getMessageServiceClient } from '@/lib/grpc-web-clients';
 import { useStore } from '@/store/store';
-
-const grpcWebUrl = process.env.NEXT_PUBLIC_GRPC_WEB_URL ?? 'http://localhost:8080';
-const client = new MessageServiceClient(grpcWebUrl, null, null);
 
 type UiMessage =
   | { type: 'system'; message: string; timestamp: string }
@@ -19,6 +16,7 @@ export function ChatRoom() {
   const nickname = useStore((s) => s.nickname);
 
   useEffect(() => {
+    const client = getMessageServiceClient();
     const streamMessages = new Empty();
     const stream = client.streamMessages(streamMessages, {});
 
@@ -70,7 +68,7 @@ export function ChatRoom() {
     message.setUsername(nickname);
     message.setText(newMessage);
 
-    client.sendMessage(message, {}, (err, response) => {
+    getMessageServiceClient().sendMessage(message, {}, (err, response) => {
       if (err) {
         console.error('Error sending message:', err);
         return;
