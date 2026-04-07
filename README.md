@@ -9,7 +9,7 @@
 | 웹 | `apps/web` | Next.js + gRPC-Web 클라이언트 |
 | Envoy | `envoy/envoy.yaml` | gRPC-Web → gRPC 변환 (리스너 **8080** → 업스트림 **50051**) |
 
-레거시: `server/`(Python)는 참고용입니다. **프론트(`client/` CRA 또는 `apps/web` Next.js)는 프론트 담당 영역**이므로 백엔드 작업 시에는 **`proto/` · `packages/grpc-server` · Envoy** 위주로 맞추면 됩니다.
+백엔드는 **`proto/` · `packages/grpc-server`(TypeScript)** 만 사용합니다. (구 Python `server/` 디렉터리는 제거됨.)
 
 ## 로컬 실행 (요약)
 

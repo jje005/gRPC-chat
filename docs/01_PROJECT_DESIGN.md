@@ -3,8 +3,8 @@
 ## 1. 목적과 범위
 
 - **목적**: 브라우저(웹)와 gRPC 서버 간 채팅을 학습·실습한다.
-- **현재 상태**: Python 기반 gRPC 서버, React(CRA) + grpc-web 클라이언트, Envoy 설정(참고용) 존재.
-- **목표 방향**: 백엔드를 **TypeScript** 기반으로 옮기고, 웹 앱은 **Next.js**를 사용하는 구조로 정리한다.
+- **현재 상태**: gRPC 서버는 **Node.js + TypeScript** (`packages/grpc-server`), 웹은 **Next.js** (`apps/web`) + gRPC-Web, Envoy 설정 사용.
+- **레거시**: CRA `client/` 는 선택적으로 유지·제거한다.
 
 ---
 
@@ -57,7 +57,7 @@ flowchart LR
 
 ## 4. 도메인 및 API (기존 proto 유지 전제)
 
-`server/proto/server.proto` 기준:
+루트 `proto/server.proto` 기준:
 
 | 서비스 | RPC | 역할 |
 |--------|-----|------|
@@ -73,8 +73,8 @@ flowchart LR
 ## 5. 비기능 요구 (초기 단계)
 
 - **로컬 실행**: README 수준으로 “서버 기동 → Envoy 기동 → Next.js dev” 순서를 명시한다.
-- **포트 정책**: Envoy 리스너, 업스트림(gRPC 서버), 브라우저가 바라보는 URL을 표로 고정한다. (현재 저장소에는 Envoy가 `9090`, Python은 `50051`, 클라이언트는 `50051`을 직접 지정하는 등 **불일치 가능성**이 있어 전환 시 정리 대상이다.)
-- **스트리밍**: Python 구현은 연결 시점의 버퍼만 흘리는 형태에 가깝다. 실시간 브로드캐스트가 목표면 설계 단계에서 “구독자 큐 / 브로커”를 명시해야 한다(후속 과제).
+- **포트 정책**: Envoy **8080** → gRPC **50051**, 웹 **3001**(Next dev), 브라우저 gRPC-Web은 기본 **같은 출처 `/grpc-web` 프록시**를 사용한다.
+- **스트리밍**: TS 서버는 메모리 브로드캐스트로 동작한다. 영속 큐·브로커는 후속 과제.
 
 ---
 
@@ -93,7 +93,7 @@ repo-root/
   docs/                  # 본 문서들
 ```
 
-기존 `client/`(CRA), `server/`(Python)는 이전 완료 후 제거 또는 `legacy/` 보관을 정책으로 정한다.
+Python `server/` 는 제거되었다. CRA `client/` 는 선택적으로 유지·제거한다.
 
 ---
 

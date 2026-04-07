@@ -11,29 +11,15 @@
 
 ---
 
-## 2. 백엔드 (현재 `server/` Python)
+## 2. 백엔드 (Python `server/` → 제거 완료)
 
-### 2.1 삭제 또는 레거시 처리 대상
+- **삭제됨**: `server/` 전체(Python 진입점, `services/*.py`, `proto/*_pb2*.py`, 중복 `server.proto` 등).
+- **현재 소스**: `packages/grpc-server`(TypeScript), 계약은 루트 `proto/server.proto`.
 
-| 경로 | 비고 |
-|------|------|
-| `server/server.py` | 진입점 — Node TS 서버로 대체 |
-| `server/services/*.py` | `UserService`, `MessageService` 로직 이식 |
-| `server/proto/server_pb2.py`, `server_pb2_grpc.py` | Python 전용 생성물 — TS용 생성으로 교체 |
+### 2.1 구현 시 참고 (과거 Python 대비)
 
-### 2.2 신규 추가 (예상)
-
-| 항목 | 설명 |
-|------|------|
-| `package.json` / `tsconfig.json` | grpc-server 패키지용 |
-| 의존성 | `@grpc/grpc-js`, `@grpc/proto-loader` 또는 `grpc-tools` + 생성 스크립트 |
-| `src/index.ts` (또는 유사) | `grpc.Server` 생성, 서비스 등록, `bindAsync`로 포트 리슨 |
-| `src/services/user.ts`, `message.ts` | `server.proto`의 Servicer 인터페이스 구현 |
-
-### 2.3 구현 시 주의 (기존 Python 동작 기준)
-
-- **Login 응답**: `Join.jsx`는 `response.getStatus() === 'success'`일 때만 `/chat`으로 이동한다. Python은 `"User logged in"`을 반환해 **프론트와 불일치**한다. TS 이전 시 **proto 변경 없이** 상태 문자열을 맞추거나, proto에 `code` 필드를 추가하는 등 **계약 정리**가 필요하다.
-- **스트리밍**: 현재 `StreamMessages` / `NotifyUserJoin` / `NotifyUserLeave`는 “이미 쌓인 배열을 한 번 흘려보내는” 수준이다. 동일 동작을 옮기면 학습용으로는 단순하나, “실시간 채팅” 체감을 위해서는 **이벤트 브로드캐스트** 설계가 별도 과제다.
+- **Login**: 프론트는 `status === 'success'` 를 기대 — TS 서버에서 맞춤.
+- **스트리밍**: 메모리 브로드캐스트로 동작; 고가용·영속 스트림은 별도 설계.
 
 ---
 
@@ -83,7 +69,7 @@
 
 | 항목 | 작업 |
 |------|------|
-| `server/README.md` | Python 전용 설명 → Node/TS 기동·proto 생성 명령으로 갱신 |
+| ~~`server/README.md`~~ | Python 서버 제거로 삭제됨 — 루트 `README.md`·`docs/03` 참고 |
 | 루트 `README.md` (없으면 추가 여부 팀 합의) | 한 번에 띄우는 순서와 포트 표 |
 | `.gitignore` | `node_modules`, Next `.next`, 생성된 pb 대량 파일 정책 |
 | Docker (선택) | Envoy + grpc-server + web를 `docker-compose`로 묶으면 재현성 향상 |
@@ -97,7 +83,7 @@
 3. **Envoy 경유 gRPC-Web** — 브라우저에서 Unary 성공  
 4. **스트리밍 RPC** — `StreamMessages` 등 기존 동작 이식 후 개선(브로드캐스트)은 별도 이슈  
 5. **Next.js로 UI 이전** — 라우팅·환경 변수·클라이언트 컴포넌트 분리  
-6. **Python `server/` 제거 또는 `legacy/` 이동** — 혼동 방지  
+6. ~~**Python `server/` 제거**~~ — 완료  
 
 ---
 
@@ -123,4 +109,4 @@
 | Envoy 업스트림 | `envoy/envoy.yaml` → `127.0.0.1:50051` |
 | 루트 워크스페이스 | `package.json` workspaces + 루트 `README.md` 실행 안내 |
 
-남은 선택 작업: 레거시 `server/`·`client/` 정리, Docker/Compose로 Envoy·서버 일괄 기동, proto 재생성 스크립트를 `proto/` 기준으로 통일.
+남은 선택 작업: 레거시 CRA `client/` 정리, Docker/Compose로 Envoy·서버 일괄 기동, proto 재생성 스크립트를 `proto/` 기준으로 통일.
