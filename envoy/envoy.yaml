@@ -1,5 +1,5 @@
 # gRPC-Web → gRPC
-# ENVOY_CONFIG_VERIFY: cors_route_policy_20260407
+# ENVOY_CONFIG_VERIFY: cors_prefix_star_forward_preflight_20260407
 #
 # 브라우저 CORS: v3에서는 Cors 필터 + 라우트 typed_per_filter_config(CorsPolicy) 조합이 필요합니다.
 
@@ -40,15 +40,19 @@ static_resources:
                           typed_per_filter_config:
                             envoy.filters.http.cors:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.CorsPolicy
+                              # 정규식 대신 prefix — 로컬/IPv6 루프백 포트 전부 허용
                               allow_origin_string_match:
-                                - safe_regex:
-                                    google_re2: {}
-                                    regex: "^http://(localhost|127\\.0\\.0\\.1)(:\\d+)?$"
-                              allow_methods: "GET, PUT, DELETE, POST, OPTIONS, PATCH"
-                              allow_headers: "keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization"
-                              expose_headers: "custom-header-1,grpc-status,grpc-message"
+                                - prefix: "http://localhost:"
+                                - prefix: "http://127.0.0.1:"
+                                - prefix: "http://[::1]:"
+                              # Envoy CORS: "*" 이면 프리플라이트의 Request-Method/Headers 를 그대로 반사
+                              allow_methods: "*"
+                              allow_headers: "*"
+                              expose_headers: "custom-header-1,grpc-status,grpc-message,grpc-status-details-bin"
                               max_age: "1728000"
                               allow_private_network_access: true
+                              # Origin 불일치 시 OPTIONS 를 gRPC 업스트림으로 넘기지 않음(거기서 CORS 헤더 없음)
+                              forward_not_matching_preflights: false
                 http_filters:
                   # OPTIONS 프리플라이트는 cors가 먼저 처리하는 편이 안전
                   - name: envoy.filters.http.cors
