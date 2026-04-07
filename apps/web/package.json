@@ -6,7 +6,8 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "npm run lint && npm run build"
   },
   "dependencies": {
     "google-protobuf": "^3.21.2",

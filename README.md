@@ -32,6 +32,7 @@ WSL에서 `envoy` 가 없으면 저장소 루트에서 **`bash scripts/install-e
 
 - `npm run grpc:dev` — gRPC 서버 개발 모드 (`tsx watch`)
 - `npm run web:dev` — Next.js 개발 서버
+- `npm test` — gRPC 서버 `tsc` + 웹 `lint`·`build` (단위 테스트 프레임워크 없을 때 CI/로컬 검증용)
 
 ## 참고
 
