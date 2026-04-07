@@ -134,6 +134,9 @@ netstat -ano | findstr :9901
 - **`yaml-cpp: error at line X ... end of sequence not found`**  
   → 설정 파일 **YAML 문법(들여쓰기)이 깨진 것**입니다. `listeners` / `clusters` 가 `static_resources` **안**에 들어가야 하는데, 예전 예제처럼 맨 앞줄에 나란히 쓰면 파서가 망가집니다. 저장소의 `envoy/envoy.yaml` 최신본을 쓰세요.
 
+- **`Didn't find ... grpc_web ... type URL: ''`**  
+  → `http_filters` 항목마다 **`typed_config` + `@type`** 이 있어야 하는데, **파일이 예전 버전**이거나 **들여쓰기/CRLF** 로 `typed_config` 가 빠진 것처럼 파싱된 경우입니다. `git pull` 후 `grep ENVOY_CONFIG_VERIFY envoy/envoy.yaml` 로 최신인지 확인하고, `bash scripts/check-envoy-yaml.sh` 로 `@type` 이 세 줄 다 나오는지 봅니다 (Python3 + PyYAML).
+
 - **`At least one of --config-path ... should be non-empty`**  
   → `-c` 뒤에 경로가 비었거나, `sudo` 등으로 경로가 빠졌을 때입니다. `envoy --config-path "$PWD/envoy/envoy.yaml"` 처럼 **절대 경로**를 권장합니다.
 

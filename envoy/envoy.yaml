@@ -1,5 +1,8 @@
-# gRPC-Web(브라우저) → gRPC(백엔드)
-# 이전 파일은 들여쓰기가 잘못되어 yaml-cpp: end of sequence not found 가 났습니다.
+# gRPC-Web → gRPC (grpc/grpc-web echo 예제와 동일 패턴)
+# ENVOY_CONFIG_VERIFY: grpc_web_typed_v3_20260407 (git pull 후 이 줄이 있어야 함)
+#
+# "type URL: ''" 오류는 보통 (1) 이 파일이 예전 버전 (2) typed_config 들여쓰기 깨짐
+# 확인: sed -n '45,58p' envoy/envoy.yaml | cat -A
 
 admin:
   access_log_path: /tmp/admin_access.log
@@ -22,7 +25,6 @@ static_resources:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                 codec_type: AUTO
                 stat_prefix: ingress_http
-                stream_idle_timeout: 0s
                 route_config:
                   name: local_route
                   virtual_hosts:
@@ -33,6 +35,7 @@ static_resources:
                             prefix: "/"
                           route:
                             cluster: chat_service
+                            timeout: 0s
                             max_stream_duration:
                               grpc_timeout_header_max: 0s
                       cors:
@@ -43,7 +46,6 @@ static_resources:
                         max_age: "1728000"
                         expose_headers: custom-header-1,grpc-status,grpc-message
                 http_filters:
-                  # v3 에서는 name 만으로는 부족하고 @type 이 필요함 (비어 있으면 "type URL: ''" 오류)
                   - name: envoy.filters.http.grpc_web
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
@@ -59,8 +61,11 @@ static_resources:
       connect_timeout: 0.25s
       type: LOGICAL_DNS
       lb_policy: ROUND_ROBIN
-      dns_lookup_family: V4_ONLY
-      http2_protocol_options: {}
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
       load_assignment:
         cluster_name: chat_service
         endpoints:

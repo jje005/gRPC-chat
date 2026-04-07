@@ -1,5 +1,5 @@
-# Docker/Podman: 업스트림을 host.docker.internal:50051 로 (compose + extra_hosts)
-# envoy.yaml 과 동일 구조, clusters 주소만 다름
+# Docker/Podman + host.docker.internal:50051
+# ENVOY_CONFIG_VERIFY: grpc_web_typed_v3_20260407
 
 admin:
   access_log_path: /tmp/admin_access.log
@@ -22,7 +22,6 @@ static_resources:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
                 codec_type: AUTO
                 stat_prefix: ingress_http
-                stream_idle_timeout: 0s
                 route_config:
                   name: local_route
                   virtual_hosts:
@@ -33,6 +32,7 @@ static_resources:
                             prefix: "/"
                           route:
                             cluster: chat_service
+                            timeout: 0s
                             max_stream_duration:
                               grpc_timeout_header_max: 0s
                       cors:
@@ -58,8 +58,11 @@ static_resources:
       connect_timeout: 0.25s
       type: LOGICAL_DNS
       lb_policy: ROUND_ROBIN
-      dns_lookup_family: V4_ONLY
-      http2_protocol_options: {}
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
       load_assignment:
         cluster_name: chat_service
         endpoints:
