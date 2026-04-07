@@ -183,6 +183,17 @@ taskkill /PID <PID> /F
 
 Next(3001)와 CRA(3000)를 동시에 켜도 보통은 괜찮습니다. 같은 포트를 쓰게 바꿨다면 한쪽만 실행하거나 `--port` 로 나눕니다.
 
+### 브라우저: `Http ... status code: 0` / gRPC-Web 로그인 콜백 `err`
+
+**의미:** 브라우저가 **유효한 HTTP 응답을 받지 못함**(연결 거절·프록시 없음·URL 오류·CORS 등). 서버가 400/500을 준 게 아니라 **앞단에서 끊긴 경우**가 많습니다.
+
+**확인:**
+
+1. **`npm run grpc:dev`** + **`envoy`**(8080) **둘 다** 실행 중인지.  
+2. **`NEXT_PUBLIC_GRPC_WEB_URL=http://localhost:8080`** (`apps/web/.env.local`) — **50051** 이 아님. 변경 후 **Next dev 재시작**.  
+3. 터미널에서 `curl -v http://127.0.0.1:8080/` 로 8080 접속 여부.  
+4. 개발자 도구 콘솔의 **`[Login gRPC-Web] { baseUrl: ... }`** 로 실제 요청 URL 확인.
+
 ---
 
 ## 관련 문서

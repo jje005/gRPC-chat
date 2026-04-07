@@ -24,7 +24,9 @@ export function JoinPage() {
 
     userClient.login(userInfo, {}, (err, response) => {
       if (err) {
-        console.error(err.message);
+        // http status code: 0 = 브라우저가 응답을 못 받음(연결 거절·CORS·Envoy 미기동 등)
+        const code = err && typeof err === 'object' && 'code' in err ? (err as { code: unknown }).code : undefined;
+        console.error('[Login gRPC-Web]', { baseUrl: grpcWebUrl, message: err.message, code, err });
         return;
       }
       if (response?.getStatus() === 'success') {
